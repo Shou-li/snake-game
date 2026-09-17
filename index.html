@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>課堂小組抽籤系統 - Classroom Team Drawer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>法老王的金字塔方塊 - Pharaoh's Tetris</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -11,175 +11,189 @@
             theme: {
                 extend: {
                     colors: {
-                        appBg: '#0f172a',
-                        cardBg: '#1e293b',
-                        accent: '#6366f1',
-                        accentHover: '#4f46e5',
+                        egyptGold: '#D4AF37',
+                        egyptDark: '#120f0c',
+                        egyptCard: '#1f1a14',
+                        egyptBorder: '#8c6d28',
+                        nileBlue: '#0f2942',
                     }
                 }
             }
         }
     </script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
+            font-family: 'Noto Serif TC', serif;
+            background: radial-gradient(circle at center, #1f1a14 0%, #0d0a06 100%);
+            color: #f3e9dc;
+            touch-action: manipulation;
         }
-        @keyframes pulse-scale {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .title-font {
+            font-family: 'Cinzel', serif;
         }
-        .animate-pulse-scale {
-            animation: pulse-scale 0.5s ease-in-out;
+        .egypt-border {
+            border: 3px solid #D4AF37;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.3), inset 0 0 15px rgba(212, 175, 55, 0.15);
         }
-        @keyframes bounce-slow {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+        .egypt-panel {
+            background: rgba(31, 26, 20, 0.95);
+            border: 2px solid #8c6d28;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
         }
-        .animate-bounce-slow {
-            animation: bounce-slow 2s infinite ease-in-out;
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 10px #D4AF37, 0 0 20px #D4AF37; }
+            50% { text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700; }
+        }
+        .glowing-title {
+            animation: glow 3s infinite ease-in-out;
+        }
+        .hieroglyph {
+            font-family: sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #120f0c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8c6d28;
+            border-radius: 3px;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-between p-4 md:p-6 selection:bg-indigo-500 selection:text-white">
+<body class="min-h-screen flex flex-col items-center justify-between p-3 md:p-6 overflow-x-hidden selection:bg-amber-500 selection:text-black">
 
     <!-- Header -->
-    <header class="w-full max-w-3xl text-center py-4">
-        <div class="inline-flex items-center justify-center bg-indigo-500/10 border border-indigo-500/30 px-4 py-1.5 rounded-full text-indigo-400 text-xs md:text-sm font-semibold mb-2 shadow-inner">
-            🎓 互動教學小幫手
+    <header class="w-full max-w-4xl text-center py-2 md:py-4 flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-1">
+            <span class="text-2xl">𓋹</span>
+            <span class="text-xs md:text-sm tracking-widest text-amber-400 font-semibold uppercase">古埃及神殿傳說</span>
+            <span class="text-2xl">𓃭</span>
         </div>
-        <h1 class="text-3xl md:text-4xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
-            課堂小組抽籤系統
+        <h1 class="text-3xl md:text-5xl font-black tracking-wider text-amber-300 title-font glowing-title">
+            PHARAOH'S TETRIS
         </h1>
-        <p class="text-slate-400 text-xs md:text-sm mt-1">輕鬆管理組別、隨機抽籤、決定上臺順序</p>
+        <p class="text-amber-200/70 text-xs md:text-sm mt-1 tracking-wider">法老王的金字塔方塊 • 挑戰古神試煉</p>
     </header>
 
-    <!-- Main Container -->
-    <main class="w-full max-w-3xl flex flex-col gap-6 my-2">
+    <!-- Main Game Container -->
+    <main class="w-full max-w-4xl flex flex-col lg:flex-row items-center justify-center gap-6 my-2">
         
-        <!-- Navigation Tabs -->
-        <div class="flex bg-cardBg/90 backdrop-blur border border-slate-700/60 p-1.5 rounded-2xl shadow-lg">
-            <button onclick="switchTab('draw')" id="tabBtn-draw" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md">
-                🎯 隨機抽籤
-            </button>
-            <button onclick="switchTab('order')" id="tabBtn-order" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white">
-                🔀 順序排定
-            </button>
-            <button onclick="switchTab('teams')" id="tabBtn-teams" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white">
-                📋 組別設定 <span id="teamCountBadge" class="bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-300">8</span>
-            </button>
+        <!-- Left Panel: Stats & Controls / Hold Piece -->
+        <div class="w-full lg:w-64 flex flex-row lg:flex-col justify-between lg:justify-start gap-4">
+            
+            <!-- Hold Piece Card -->
+            <div class="egypt-panel rounded-2xl p-4 flex-1 lg:flex-none flex flex-col items-center">
+                <div class="text-xs text-amber-400 font-bold tracking-wider mb-2 flex items-center gap-1">
+                    <span>𓁹</span> 聖物暫存 (HOLD)
+                </div>
+                <div id="holdContainer" class="w-20 h-20 bg-black/60 border border-amber-600/40 rounded-xl flex items-center justify-center relative">
+                    <canvas id="holdCanvas" width="80" height="80"></canvas>
+                </div>
+            </div>
+
+            <!-- Score & Stats Card -->
+            <div class="egypt-panel rounded-2xl p-4 flex-1 lg:flex-none space-y-3">
+                <div class="flex justify-between items-center border-b border-amber-900/50 pb-2">
+                    <span class="text-xs text-amber-400 font-bold flex items-center gap-1">𓅓 神殿分數</span>
+                    <span id="scoreVal" class="text-xl md:text-2xl font-black text-amber-300 font-mono">0</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-amber-900/50 pb-2">
+                    <span class="text-xs text-amber-400 font-bold flex items-center gap-1">𓀀 試煉階層</span>
+                    <span id="levelVal" class="text-lg font-bold text-amber-300 font-mono">1</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-amber-400 font-bold flex items-center gap-1">𓆣 消除行數</span>
+                    <span id="linesVal" class="text-lg font-bold text-amber-300 font-mono">0</span>
+                </div>
+            </div>
+
+            <!-- Audio & Settings Control -->
+            <div class="egypt-panel rounded-2xl p-4 flex flex-col gap-2.5">
+                <div class="text-xs text-amber-400 font-bold tracking-wider mb-1 flex items-center gap-1">
+                    <span>𓋹</span> 神殿祭典 (音效/音樂)
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleAudio()" id="audioBtn" class="flex-1 bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500/60 text-amber-200 text-xs py-2 px-3 rounded-xl font-bold transition flex items-center justify-center gap-1.5">
+                        <span id="audioIcon">🔊</span> <span id="audioText">音樂: 開啟</span>
+                    </button>
+                    <button onclick="toggleSFX()" id="sfxBtn" class="bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500/60 text-amber-200 text-xs py-2 px-3 rounded-xl font-bold transition flex items-center justify-center">
+                        <span id="sfxIcon">🔔</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- Tab 1: Random Draw -->
-        <div id="tab-draw" class="space-y-6">
-            <div class="bg-cardBg/90 backdrop-blur border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-xl flex flex-col items-center text-center relative overflow-hidden">
+        <!-- Center: Tetris Game Board -->
+        <div class="relative flex flex-col items-center">
+            
+            <!-- Board Wrapper with Egyptian Decorative Border -->
+            <div class="relative egypt-border rounded-3xl p-3 bg-[#0d0a06]/90 backdrop-blur shadow-2xl overflow-hidden">
                 
-                <!-- Draw Settings Bar -->
-                <div class="w-full flex flex-wrap justify-between items-center gap-4 pb-6 border-b border-slate-700/60">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs md:text-sm text-slate-400 font-medium">抽取數量：</span>
-                        <select id="drawCountSelect" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm font-bold text-indigo-400 focus:outline-none focus:border-indigo-500">
-                            <option value="1">1 組</option>
-                            <option value="2">2 組</option>
-                            <option value="3">3 組</option>
-                            <option value="4">4 組</option>
-                            <option value="5">5 組</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs md:text-sm text-slate-400 font-medium cursor-pointer flex items-center gap-1.5">
-                            <input type="checkbox" id="removeDrawnCheckbox" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
-                            已抽中者暫不重複抽取
-                        </label>
-                    </div>
+                <!-- Background Hieroglyphs Overlay -->
+                <div class="absolute inset-0 opacity-10 pointer-events-none flex flex-wrap items-center justify-center text-amber-500 text-3xl gap-8 select-none">
+                    <span>𓀀</span><span>𓃭</span><span>𓆣</span><span>𓁹</span><span>𓅓</span><span>𓋹</span>
+                    <span>𓁹</span><span>𓅓</span><span>𓋹</span><span>𓀀</span><span>𓃭</span><span>𓆣</span>
+                    <span>𓆣</span><span>𓁹</span><span>𓅓</span><span>𓋹</span><span>𓀀</span><span>𓃭</span>
                 </div>
 
-                <!-- Draw Result Display Area -->
-                <div class="py-10 md:py-14 w-full flex flex-col items-center justify-center min-h-[220px]">
-                    <div id="drawPlaceholder" class="text-slate-500 text-sm md:text-base flex flex-col items-center gap-3">
-                        <div class="w-16 h-16 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-center text-3xl shadow-inner">
-                            🎲
-                        </div>
-                        點擊下方按鈕開始隨機抽籤
-                    </div>
-                    <div id="drawResultContainer" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-xl">
-                        <!-- Dynamically populated results -->
-                    </div>
-                </div>
+                <!-- Canvas -->
+                <canvas id="tetrisCanvas" width="300" height="600" class="block rounded-xl shadow-inner relative z-10"></canvas>
 
-                <!-- Action Button -->
-                <div class="flex flex-wrap justify-center gap-3 w-full max-w-md">
-                    <button onclick="startDraw()" id="drawBtn" class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-500/25 transition-all transform active:scale-95 text-lg tracking-wider flex items-center justify-center gap-2">
-                        <span>✨ 開始抽籤</span>
-                    </button>
-                    <button onclick="resetDrawPool()" id="resetPoolBtn" title="重置未抽中名單" class="hidden bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-4 rounded-2xl font-medium text-sm transition-all shadow">
-                        重置
-                    </button>
-                </div>
-
-                <!-- Remaining pool info -->
-                <p id="poolInfoText" class="text-xs text-slate-500 mt-4">目前參與抽籤組別：共 8 組</p>
-            </div>
-        </div>
-
-        <!-- Tab 2: Presentation Order -->
-        <div id="tab-order" class="hidden space-y-6">
-            <div class="bg-cardBg/90 backdrop-blur border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-xl flex flex-col items-center">
-                <div class="w-full flex justify-between items-center pb-6 border-b border-slate-700/60">
-                    <div>
-                        <h2 class="text-lg font-bold text-white">上臺發表順序排定</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">隨機打亂所有組別順序，決定上臺報告次序</p>
-                    </div>
-                    <button onclick="shuffleOrder()" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-indigo-500/25 transition-all transform active:scale-95 text-sm flex items-center gap-2">
-                        🔀 隨機洗牌
-                    </button>
-                </div>
-
-                <!-- Order List Area -->
-                <div class="w-full py-6">
-                    <div id="orderListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <!-- Dynamically populated order items -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tab 3: Team Management -->
-        <div id="tab-teams" class="hidden space-y-6">
-            <div class="bg-cardBg/90 backdrop-blur border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-xl space-y-6">
-                <div class="flex justify-between items-center pb-4 border-b border-slate-700/60">
-                    <div>
-                        <h2 class="text-lg font-bold text-white">組別清單管理</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">自訂組別名稱或數量（支援直接編輯）</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="resetDefaultTeams()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-2 rounded-xl transition-all">
-                            恢復預設
-                        </button>
-                        <button onclick="addTeam()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow transition-all flex items-center gap-1">
-                            + 新增組別
+                <!-- Start / Pause / Game Over Overlay Modal -->
+                <div id="gameOverlay" class="absolute inset-0 bg-black/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-center p-6 transition-all">
+                    <div id="overlayContent" class="space-y-4 max-w-xs">
+                        <div class="text-4xl">🏛️</div>
+                        <h2 class="text-2xl md:text-3xl font-black text-amber-300 title-font">法老王的試煉</h2>
+                        <p class="text-xs text-amber-200/80 leading-relaxed">
+                            疊放古埃及聖石，消除神殿法陣。<br>挑戰最高榮耀！
+                        </p>
+                        <button onclick="startGame()" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-amber-600/30 transition transform active:scale-95 text-base tracking-widest border border-amber-300">
+                            ✨ 開始冒險 (START)
                         </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Batch Add / Quick Presets -->
-                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">快速生成組別</span>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="quickGenerateTeams(4)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition">4 組</button>
-                        <button onclick="quickGenerateTeams(6)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition">6 組</button>
-                        <button onclick="quickGenerateTeams(8)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition">8 組</button>
-                        <button onclick="quickGenerateTeams(10)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition">10 組</button>
-                        <button onclick="quickGenerateTeams(12)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition">12 組</button>
-                    </div>
+            <!-- Mobile Touch Controls -->
+            <div class="grid grid-cols-5 gap-2 w-full max-w-[324px] mt-4 lg:hidden">
+                <button onclick="movePiece(-1, 0)" class="egypt-panel bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 font-black py-3 rounded-xl text-lg flex items-center justify-center active:scale-95 transition">◀</button>
+                <button onclick="dropPiece()" class="egypt-panel bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 font-black py-3 rounded-xl text-lg flex items-center justify-center active:scale-95 transition">▼</button>
+                <button onclick="movePiece(1, 0)" class="egypt-panel bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 font-black py-3 rounded-xl text-lg flex items-center justify-center active:scale-95 transition">▶</button>
+                <button onclick="rotatePiece()" class="egypt-panel bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 font-black py-3 rounded-xl text-lg flex items-center justify-center active:scale-95 transition">🔄</button>
+                <button onclick="hardDrop()" class="egypt-panel bg-amber-600/40 hover:bg-amber-600/60 text-amber-200 font-black py-3 rounded-xl text-xs flex items-center justify-center active:scale-95 transition">⚡直落</button>
+            </div>
+        </div>
+
+        <!-- Right Panel: Next Piece & Controls Guide -->
+        <div class="w-full lg:w-64 flex flex-row lg:flex-col justify-between lg:justify-start gap-4">
+            
+            <!-- Next Piece Card -->
+            <div class="egypt-panel rounded-2xl p-4 flex-1 lg:flex-none flex flex-col items-center">
+                <div class="text-xs text-amber-400 font-bold tracking-wider mb-2 flex items-center gap-1">
+                    <span>𓅓</span> 下一聖石 (NEXT)
                 </div>
+                <div id="nextContainer" class="w-20 h-20 bg-black/60 border border-amber-600/40 rounded-xl flex items-center justify-center relative">
+                    <canvas id="nextCanvas" width="80" height="80"></canvas>
+                </div>
+            </div>
 
-                <!-- Teams Edit List -->
-                <div id="teamsEditList" class="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
-                    <!-- Dynamically populated team inputs -->
+            <!-- Controls Guide Card (Desktop) -->
+            <div class="egypt-panel rounded-2xl p-4 hidden lg:flex flex-col gap-2">
+                <div class="text-xs text-amber-400 font-bold tracking-wider mb-1 flex items-center gap-1">
+                    <span>𓀀</span> 操作指引 (CONTROLS)
+                </div>
+                <div class="text-xs text-amber-200/80 space-y-1.5 font-mono">
+                    <div class="flex justify-between"><span>左 / 右移動</span><span class="text-amber-400">← / →</span></div>
+                    <div class="flex justify-between"><span>加速下落</span><span class="text-amber-400">↓</span></div>
+                    <div class="flex justify-between"><span>旋轉聖石</span><span class="text-amber-400">↑ / X</span></div>
+                    <div class="flex justify-between"><span>瞬間直落</span><span class="text-amber-400">空白鍵</span></div>
+                    <div class="flex justify-between"><span>聖物暫存</span><span class="text-amber-400">C / ⇧</span></div>
+                    <div class="flex justify-between"><span>暫停遊戲</span><span class="text-amber-400">P / Esc</span></div>
                 </div>
             </div>
         </div>
@@ -187,322 +201,594 @@
     </main>
 
     <!-- Footer -->
-    <footer class="w-full text-center text-xs text-slate-500 py-4">
-        課堂小組抽籤系統 • 輕鬆互動無負擔
+    <footer class="w-full text-center text-xs text-amber-400/60 py-3 tracking-widest title-font">
+        PHARAOH'S TETRIS • ANCIENT EGYPTIAN GODS BLESSINGS
     </footer>
 
-    <!-- Audio & App Logic Script -->
+    <!-- Game Logic & Web Audio API Sound System -->
     <script>
-        // Web Audio API Sound Synthesizer (No external mp3 needed)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // --- Web Audio API Sound Synthesizer ---
+        let audioCtx = null;
+        let isAudioEnabled = true;
+        let isSFXEnabled = true;
+        let bgmInterval = null;
 
-        function playSound(type) {
-            if (!audioCtx) return;
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            const now = audioCtx.currentTime;
-
-            if (type === 'click') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(400, now);
-                osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                osc.start(now);
-                osc.stop(now + 0.05);
-            } else if (type === 'spin') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(200 + Math.random() * 300, now);
-                gain.gain.setValueAtTime(0.08, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-                osc.start(now);
-                osc.stop(now + 0.08);
-            } else if (type === 'win') {
-                // Ta-da chord sequence
-                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-                notes.forEach((freq, index) => {
-                    const o = audioCtx.createOscillator();
-                    const g = audioCtx.createGain();
-                    o.connect(g);
-                    g.connect(audioCtx.destination);
-                    o.type = 'sine';
-                    o.frequency.setValueAtTime(freq, now + index * 0.08);
-                    g.gain.setValueAtTime(0.15, now + index * 0.08);
-                    g.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.3);
-                    o.start(now + index * 0.08);
-                    o.stop(now + index * 0.08 + 0.3);
-                });
-            }
         }
 
-        // State Management
-        let teams = JSON.parse(localStorage.getItem('classroom_teams')) || [
-            '第 1 組', '第 2 組', '第 3 組', '第 4 組',
-            '第 5 組', '第 6 組', '第 7 組', '第 8 組'
-        ];
-        let drawnPool = [...teams];
-        let currentTab = 'draw';
+        function playSound(type) {
+            if (!isSFXEnabled || !audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
 
-        // Initialize App
-        function initApp() {
-            updateTeamCountBadge();
-            renderTeamsEditList();
-            renderOrderList();
-            updatePoolInfo();
-        }
-
-        function saveTeams() {
-            localStorage.setItem('classroom_teams', JSON.stringify(teams));
-            updateTeamCountBadge();
-            renderTeamsEditList();
-            renderOrderList();
-            resetDrawPool();
-        }
-
-        function updateTeamCountBadge() {
-            document.getElementById('teamCountBadge').innerText = teams.length;
-        }
-
-        // Tab Switching
-        function switchTab(tab) {
-            playSound('click');
-            currentTab = tab;
-            ['draw', 'order', 'teams'].forEach(t => {
-                const el = document.getElementById(`tab-${t}`);
-                const btn = document.getElementById(`tabBtn-${t}`);
-                if (t === tab) {
-                    el.classList.remove('hidden');
-                    btn.className = 'flex-1 py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md';
-                } else {
-                    el.classList.add('hidden');
-                    btn.className = 'flex-1 py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white';
+                if (type === 'move') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'rotate') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(450, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'drop') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(60, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'clear') {
+                    // Egyptian Harp Arpeggio
+                    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(freq, now + idx * 0.06);
+                        g.gain.setValueAtTime(0.12, now + idx * 0.06);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.25);
+                        o.start(now + idx * 0.06);
+                        o.stop(now + idx * 0.06 + 0.25);
+                    });
+                } else if (type === 'tetris') {
+                    // Grand Fanfare
+                    const notes = [440, 554.37, 659.25, 880, 1108.73, 1318.51];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'triangle';
+                        o.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        g.gain.setValueAtTime(0.15, now + idx * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
+                        o.start(now + idx * 0.08);
+                        o.stop(now + idx * 0.08 + 0.35);
+                    });
+                } else if (type === 'gameover') {
+                    const notes = [300, 260, 220, 180, 130];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'sawtooth';
+                        o.frequency.setValueAtTime(freq, now + idx * 0.15);
+                        g.gain.setValueAtTime(0.12, now + idx * 0.15);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.15 + 0.3);
+                        o.start(now + idx * 0.15);
+                        o.stop(now + idx * 0.15 + 0.3);
+                    });
                 }
-            });
-            if (tab === 'order') {
-                renderOrderList();
+            } catch (e) {
+                console.error(e);
             }
         }
 
-        // --- Tab 1: Draw Logic ---
-        function updatePoolInfo() {
-            const removeDrawn = document.getElementById('removeDrawnCheckbox').checked;
-            const total = teams.length;
-            const remaining = drawnPool.length;
-            const info = document.getElementById('poolInfoText');
-            if (removeDrawn) {
-                info.innerText = `目前參與抽籤組別：剩餘 ${remaining} / ${total} 組`;
+        // Ambient Desert Background Drone
+        function startBGM() {
+            if (!isAudioEnabled || !audioCtx) return;
+            if (bgmInterval) return;
+
+            // Play ambient chords periodically
+            const chordNotes = [
+                [146.83, 220, 293.66], // D minor / Egyptian feel
+                [130.81, 196, 261.63], // C major
+                [116.54, 174.61, 220], // A minor
+                [123.47, 185, 246.94]  // B dim
+            ];
+            let chordIdx = 0;
+
+            bgmInterval = setInterval(() => {
+                if (!isAudioEnabled || !audioCtx || gameState !== 'PLAYING') return;
+                try {
+                    const now = audioCtx.currentTime;
+                    const notes = chordNotes[chordIdx % chordNotes.length];
+                    chordIdx++;
+
+                    notes.forEach(freq => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(freq, now);
+                        g.gain.setValueAtTime(0.001, now);
+                        g.gain.linearRampToValueAtTime(0.025, now + 1.0);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + 3.5);
+                        o.start(now);
+                        o.stop(now + 3.5);
+                    });
+                } catch(e) {}
+            }, 4000);
+        }
+
+        function stopBGM() {
+            if (bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            }
+        }
+
+        function toggleAudio() {
+            initAudioContext();
+            isAudioEnabled = !isAudioEnabled;
+            const btn = document.getElementById('audioBtn');
+            const icon = document.getElementById('audioIcon');
+            const text = document.getElementById('audioText');
+            if (isAudioEnabled) {
+                icon.innerText = '🔊';
+                text.innerText = '音樂: 開啟';
+                btn.className = 'flex-1 bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500/60 text-amber-200 text-xs py-2 px-3 rounded-xl font-bold transition flex items-center justify-center gap-1.5';
+                if (gameState === 'PLAYING') startBGM();
             } else {
-                info.innerText = `目前參與抽籤組別：共 ${total} 組（可重複抽取）`;
+                icon.innerText = '🔇';
+                text.innerText = '音樂: 關閉';
+                btn.className = 'flex-1 bg-zinc-800 border border-zinc-700 text-zinc-400 text-xs py-2 px-3 rounded-xl font-bold transition flex items-center justify-center gap-1.5';
+                stopBGM();
             }
         }
 
-        document.getElementById('removeDrawnCheckbox').addEventListener('change', updatePoolInfo);
-
-        function resetDrawPool() {
-            drawnPool = [...teams];
-            updatePoolInfo();
-            document.getElementById('resetPoolBtn').classList.add('hidden');
+        function toggleSFX() {
+            initAudioContext();
+            isSFXEnabled = !isSFXEnabled;
+            const sfxBtn = document.getElementById('sfxBtn');
+            const sfxIcon = document.getElementById('sfxIcon');
+            if (isSFXEnabled) {
+                sfxIcon.innerText = '🔔';
+                sfxBtn.className = 'bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500/60 text-amber-200 text-xs py-2 px-3 rounded-xl font-bold transition flex items-center justify-center';
+            } else {
+                sfxIcon.innerText = '🔕';
+                sfxBtn.className = 'bg-zinc-800 border border-zinc-700 text-zinc-400 text-xs py-2 px-3 rounded-xl font-bold transition flex items-center justify-center';
+            }
         }
 
-        function startDraw() {
-            if (teams.length === 0) {
-                alert('請先在組別設定中新增組別！');
-                switchTab('teams');
-                return;
-            }
+        // --- Tetris Game Engine ---
+        const canvas = document.getElementById('tetrisCanvas');
+        const ctx = canvas.getContext('2d');
+        const holdCanvas = document.getElementById('holdCanvas');
+        const holdCtx = holdCanvas.getContext('2d');
+        const nextCanvas = document.getElementById('nextCanvas');
+        const nextCtx = nextCanvas.getContext('2d');
 
-            const count = parseInt(document.getElementById('drawCountSelect').value);
-            const removeDrawn = document.getElementById('removeDrawnCheckbox').checked;
+        const BLOCK_SIZE = 30;
+        const COLS = 10;
+        const ROWS = 20;
 
-            let pool = removeDrawn ? [...drawnPool] : [...teams];
-            if (pool.length === 0) {
-                alert('所有組別都已經抽完了！請點擊「重置」按鈕重新開始。');
-                return;
-            }
+        let board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+        let score = 0;
+        let lines = 0;
+        let level = 1;
+        let gameState = 'IDLE'; // IDLE, PLAYING, PAUSED, GAMEOVER
 
-            if (count > pool.length && removeDrawn) {
-                alert(`目前剩餘可抽組別僅剩 ${pool.length} 組！`);
-                return;
-            }
+        // Egyptian Theme Colors & Hieroglyphic Symbols
+        const SHAPES = [
+            { id: 'I', shape: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], color: '#00A896', symbol: '𓋹' }, // Turquoise Ankh
+            { id: 'J', shape: [[1,0,0],[1,1,1],[0,0,0]], color: '#1B365D', symbol: '𓁹' }, // Lapis Eye of Horus
+            { id: 'L', shape: [[0,0,1],[1,1,1],[0,0,0]], color: '#E76F51', symbol: '𓅓' }, // Terracotta Vulture
+            { id: 'O', shape: [[1,1],[1,1]], color: '#FFD700', symbol: '𓆣' }, // Golden Scarab
+            { id: 'S', shape: [[0,1,1],[1,1,0],[0,0,0]], color: '#2A9D8F', symbol: '𓀀' }, // Emerald Pharaoh
+            { id: 'T', shape: [[0,1,0],[1,1,1],[0,0,0]], color: '#C5A059', symbol: '𓃭' }, // Sandstone Sphinx
+            { id: 'Z', shape: [[1,1,0],[0,1,1],[0,0,0]], color: '#BC4749', symbol: '𓊖' }  // Red Pyramid
+        ];
 
-            playSound('click');
-            const drawBtn = document.getElementById('drawBtn');
-            drawBtn.setAttribute('disabled', 'true');
-            drawBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        let currentPiece = null;
+        let nextPiece = null;
+        let holdPiece = null;
+        let canHold = true;
 
-            const placeholder = document.getElementById('drawPlaceholder');
-            const container = document.getElementById('drawResultContainer');
-            placeholder.classList.remove('hidden');
-            container.classList.add('hidden');
-            container.innerHTML = '';
+        let dropCounter = 0;
+        let dropInterval = 1000;
+        let lastTime = 0;
 
-            let counter = 0;
-            const maxTicks = 15;
-            const interval = setInterval(() => {
-                playSound('spin');
-                // Temporary random preview
-                const tempRandPool = [...teams].sort(() => 0.5 - Math.random());
-                const previewItems = tempRandPool.slice(0, count);
-                
-                placeholder.innerHTML = `
-                    <div class="text-xl md:text-2xl font-black text-indigo-400 animate-pulse">
-                        🎲 抽籤中... ${previewItems.join('、')}
-                    </div>
-                `;
-                counter++;
-
-                if (counter >= maxTicks) {
-                    clearInterval(interval);
-                    finishDraw(count, removeDrawn);
-                    drawBtn.removeAttribute('disabled');
-                    drawBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
-            }, 80);
+        function createPiece(type) {
+            const found = SHAPES.find(s => s.id === type);
+            return {
+                shape: found.shape,
+                color: found.color,
+                symbol: found.symbol,
+                x: Math.floor(COLS / 2) - Math.floor(found.shape[0].length / 2),
+                y: 0
+            };
         }
 
-        function finishDraw(count, removeDrawn) {
-            playSound('win');
-            let pool = removeDrawn ? [...drawnPool] : [...teams];
+        function getRandomPiece() {
+            const types = ['I', 'J', 'L', 'O', 'S', 'T', 'Z'];
+            const randType = types[Math.floor(Math.random() * types.length)];
+            return createPiece(randType);
+        }
+
+        function startGame() {
+            initAudioContext();
+            board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+            score = 0;
+            lines = 0;
+            level = 1;
+            dropInterval = 1000;
+            currentPiece = getRandomPiece();
+            nextPiece = getRandomPiece();
+            holdPiece = null;
+            canHold = true;
+            gameState = 'PLAYING';
             
-            // Randomly select `count` items without replacement for this draw
-            let selected = [];
-            for (let i = 0; i < count; i++) {
-                if (pool.length === 0) break;
-                const randomIndex = Math.floor(Math.random() * pool.length);
-                selected.push(pool.splice(randomIndex, 1)[0]);
-            }
-
-            if (removeDrawn) {
-                // Remove selected from drawnPool
-                selected.forEach(item => {
-                    const idx = drawnPool.indexOf(item);
-                    if (idx > -1) drawnPool.splice(idx, 1);
-                });
-                document.getElementById('resetPoolBtn').classList.remove('hidden');
-                updatePoolInfo();
-            }
-
-            const placeholder = document.getElementById('drawPlaceholder');
-            const container = document.getElementById('drawResultContainer');
-            placeholder.classList.add('hidden');
-            container.classList.remove('hidden');
-
-            container.innerHTML = selected.map((team, idx) => `
-                <div class="bg-gradient-to-br from-indigo-900/80 to-purple-900/80 border-2 border-indigo-500/50 rounded-2xl p-5 shadow-xl flex flex-col items-center justify-center transform animate-pulse-scale">
-                    <span class="text-xs text-indigo-300 font-semibold mb-1 uppercase tracking-wider">第 ${idx + 1} 抽中組別</span>
-                    <span class="text-2xl md:text-3xl font-black text-white tracking-wide">${team}</span>
-                </div>
-            `).join('');
+            document.getElementById('gameOverlay').classList.add('opacity-0', 'pointer-events-none');
+            updateStats();
+            if (isAudioEnabled) startBGM();
+            lastTime = performance.now();
+            requestAnimationFrame(update);
         }
 
-        // --- Tab 2: Presentation Order Logic ---
-        function shuffleOrder() {
-            playSound('click');
-            let shuffled = [...teams].sort(() => Math.random() - 0.5);
+        function gameOver() {
+            gameState = 'GAMEOVER';
+            stopBGM();
+            playSound('gameover');
             
-            const container = document.getElementById('orderListContainer');
-            container.innerHTML = '';
-
-            let i = 0;
-            const animInterval = setInterval(() => {
-                playSound('spin');
-                let temp = [...teams].sort(() => Math.random() - 0.5);
-                container.innerHTML = temp.map((team, idx) => `
-                    <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 flex items-center justify-between shadow">
-                        <div class="flex items-center gap-3">
-                            <span class="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-400 font-bold flex items-center justify-center text-sm">${idx + 1}</span>
-                            <span class="font-bold text-slate-300 text-lg">${team}</span>
-                        </div>
-                        <span class="text-xs text-slate-500 font-mono">洗牌中...</span>
-                    </div>
-                `).join('');
-                i++;
-                if (i > 10) {
-                    clearInterval(animInterval);
-                    playSound('win');
-                    renderFinalOrder(shuffled);
-                }
-            }, 60);
+            const overlay = document.getElementById('gameOverlay');
+            const content = document.getElementById('overlayContent');
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            content.innerHTML = `
+                <div class="text-4xl">⚱️</div>
+                <h2 class="text-2xl md:text-3xl font-black text-rose-400 title-font">試煉失敗 (GAME OVER)</h2>
+                <p class="text-xs text-amber-200/80">
+                    法老王神殿崩塌。<br>最終分數：<span class="text-amber-300 font-bold font-mono text-base">${score}</span>
+                </p>
+                <button onclick="startGame()" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-black py-3 px-6 rounded-2xl shadow-lg transition transform active:scale-95 text-base tracking-widest border border-amber-300">
+                    🔄 再次挑戰 (RETRY)
+                </button>
+            `;
         }
 
-        function renderOrderList() {
-            renderFinalOrder(teams);
-        }
-
-        function renderFinalOrder(list) {
-            const container = document.getElementById('orderListContainer');
-            container.innerHTML = list.map((team, idx) => `
-                <div class="bg-cardBg border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md hover:border-indigo-500/50 transition-all">
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow">${idx + 1}</span>
-                        <span class="font-bold text-white text-lg">${team}</span>
-                    </div>
-                    <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-indigo-400 font-medium">第 ${idx + 1} 順位</span>
-                </div>
-            `).join('');
-        }
-
-        // --- Tab 3: Team Management Logic ---
-        function renderTeamsEditList() {
-            const container = document.getElementById('teamsEditList');
-            container.innerHTML = teams.map((team, idx) => `
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-slate-500 font-mono w-6 text-right">${idx + 1}.</span>
-                    <input type="text" value="${team}" onchange="updateTeamName(${idx}, this.value)" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-medium focus:outline-none focus:border-indigo-500 shadow-inner">
-                    <button onclick="removeTeam(${idx})" class="bg-slate-800 hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-400 border border-slate-700 text-slate-400 p-2.5 rounded-xl transition-all">
-                        🗑️
+        function togglePause() {
+            if (gameState === 'PLAYING') {
+                gameState = 'PAUSED';
+                stopBGM();
+                const overlay = document.getElementById('gameOverlay');
+                const content = document.getElementById('overlayContent');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                content.innerHTML = `
+                    <div class="text-4xl">⏸️</div>
+                    <h2 class="text-2xl md:text-3xl font-black text-amber-300 title-font">神殿暫停</h2>
+                    <button onclick="resumeGame()" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-black py-3 px-6 rounded-2xl shadow-lg transition transform active:scale-95 text-base tracking-widest border border-amber-300">
+                        ▶ 繼續冒險
                     </button>
-                </div>
-            `).join('');
+                `;
+            } else if (gameState === 'PAUSED') {
+                resumeGame();
+            }
         }
 
-        function updateTeamName(index, newName) {
-            if (!newName.trim()) return;
-            teams[index] = newName.trim();
-            saveTeams();
+        function resumeGame() {
+            gameState = 'PLAYING';
+            if (isAudioEnabled) startBGM();
+            document.getElementById('gameOverlay').classList.add('opacity-0', 'pointer-events-none');
+            lastTime = performance.now();
+            requestAnimationFrame(update);
         }
 
-        function removeTeam(index) {
-            if (teams.length <= 1) {
-                alert('至少需保留一個組別！');
+        function updateStats() {
+            document.getElementById('scoreVal').innerText = score;
+            document.getElementById('levelVal').innerText = level;
+            document.getElementById('linesVal').innerText = lines;
+        }
+
+        function drawBlock(c, x, y, color, symbol, size = BLOCK_SIZE) {
+            c.fillStyle = color;
+            c.fillRect(x * size, y * size, size, size);
+            
+            c.strokeStyle = '#3a2d1d';
+            c.lineWidth = 1.5;
+            c.strokeRect(x * size, y * size, size, size);
+
+            // Inner highlight
+            c.fillStyle = 'rgba(255,255,255,0.25)';
+            c.fillRect(x * size + 2, y * size + 2, size - 4, 3);
+
+            // Hieroglyph symbol
+            if (size >= 30) {
+                c.fillStyle = '#120f0c';
+                c.font = 'bold 16px sans-serif';
+                c.textAlign = 'center';
+                c.textBaseline = 'middle';
+                c.fillText(symbol, (x + 0.5) * size, (y + 0.5) * size);
+            }
+        }
+
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Grid background lines
+            ctx.strokeStyle = 'rgba(140, 109, 40, 0.15)';
+            ctx.lineWidth = 0.5;
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    ctx.strokeRect(c * BLOCK_SIZE, r * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                }
+            }
+
+            // Placed blocks
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c]) {
+                        drawBlock(ctx, c, r, board[r][c].color, board[r][c].symbol);
+                    }
+                }
+            }
+
+            // Current piece
+            if (currentPiece) {
+                currentPiece.shape.forEach((row, r) => {
+                    row.forEach((value, c) => {
+                        if (value) {
+                            drawBlock(ctx, currentPiece.x + c, currentPiece.y + r, currentPiece.color, currentPiece.symbol);
+                        }
+                    });
+                });
+            }
+        }
+
+        function drawMiniPiece(c, piece, canvasEl) {
+            c.clearRect(0, 0, canvasEl.width, canvasEl.height);
+            if (!piece) return;
+            const size = 20;
+            const shape = piece.shape;
+            const w = shape[0].length;
+            const h = shape.length;
+            const offsetX = (canvasEl.width - w * size) / 2 / size;
+            const offsetY = (canvasEl.height - h * size) / 2 / size;
+
+            shape.forEach((row, r) => {
+                row.forEach((val, col) => {
+                    if (val) {
+                        drawBlock(c, offsetX + col, offsetY + r, piece.color, piece.symbol, size);
+                    }
+                });
+            });
+        }
+
+        function collide(piece, offsetX = 0, offsetY = 0, customShape = null) {
+            const shape = customShape || piece.shape;
+            for (let r = 0; r < shape.length; r++) {
+                for (let c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c]) {
+                        let newX = piece.x + c + offsetX;
+                        let newY = piece.y + r + offsetY;
+                        if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
+                        if (newY >= 0 && board[newY][newX]) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function mergePiece() {
+            currentPiece.shape.forEach((row, r) => {
+                row.forEach((val, c) => {
+                    if (val) {
+                        let py = currentPiece.y + r;
+                        let px = currentPiece.x + c;
+                        if (py >= 0) {
+                            board[py][px] = { color: currentPiece.color, symbol: currentPiece.symbol };
+                        }
+                    }
+                });
+            });
+        }
+
+        function clearLines() {
+            let cleared = 0;
+            outer: for (let r = ROWS - 1; r >= 0; r--) {
+                for (let c = 0; c < COLS; c++) {
+                    if (!board[r][c]) continue outer;
+                }
+                board.splice(r, 1);
+                board.unshift(Array(COLS).fill(0));
+                cleared++;
+                r++; // check same row again
+            }
+
+            if (cleared > 0) {
+                lines += cleared;
+                score += cleared === 4 ? 800 * level : [0, 100, 300, 500][cleared] * level;
+                level = Math.floor(lines / 10) + 1;
+                dropInterval = Math.max(150, 1000 - (level - 1) * 80);
+                updateStats();
+
+                if (cleared >= 4) {
+                    playSound('tetris');
+                } else {
+                    playSound('clear');
+                }
+            }
+        }
+
+        function movePiece(dx, dy) {
+            if (gameState !== 'PLAYING') return;
+            if (!collide(currentPiece, dx, dy)) {
+                currentPiece.x += dx;
+                currentPiece.y += dy;
+                playSound('move');
+                return true;
+            }
+            return false;
+        }
+
+        function rotatePiece() {
+            if (gameState !== 'PLAYING') return;
+            const shape = currentPiece.shape;
+            const N = shape.length;
+            let rotated = Array.from({ length: N }, () => Array(N).fill(0));
+            for (let r = 0; r < N; r++) {
+                for (let c = 0; c < N; c++) {
+                    rotated[c][N - 1 - r] = shape[r][c];
+                }
+            }
+
+            // Wall kick checks
+            let offset = 0;
+            if (collide(currentPiece, 0, 0, rotated)) {
+                if (!collide(currentPiece, -1, 0, rotated)) offset = -1;
+                else if (!collide(currentPiece, 1, 0, rotated)) offset = 1;
+                else if (!collide(currentPiece, 0, -1, rotated)) offset = 0; // vertical kick
+                else return;
+            }
+
+            currentPiece.x += offset;
+            currentPiece.shape = rotated;
+            playSound('rotate');
+        }
+
+        function dropPiece() {
+            if (gameState !== 'PLAYING') return;
+            if (!movePiece(0, 1)) {
+                mergePiece();
+                clearLines();
+                
+                if (currentPiece.y <= 0) {
+                    gameOver();
+                    return;
+                }
+
+                currentPiece = nextPiece;
+                nextPiece = getRandomPiece();
+                canHold = true;
+                drawMiniPiece(nextCtx, nextPiece, nextCanvas);
+                playSound('drop');
+            }
+            dropCounter = 0;
+        }
+
+        function hardDrop() {
+            if (gameState !== 'PLAYING') return;
+            let dropCount = 0;
+            while (!collide(currentPiece, 0, 1)) {
+                currentPiece.y++;
+                dropCount++;
+            }
+            score += dropCount * 2;
+            updateStats();
+            mergePiece();
+            clearLines();
+
+            if (currentPiece.y <= 0) {
+                gameOver();
                 return;
             }
-            playSound('click');
-            teams.splice(index, 1);
-            saveTeams();
+
+            currentPiece = nextPiece;
+            nextPiece = getRandomPiece();
+            canHold = true;
+            drawMiniPiece(nextCtx, nextPiece, nextCanvas);
+            playSound('drop');
+            dropCounter = 0;
         }
 
-        function addTeam() {
-            playSound('click');
-            teams.push(`第 ${teams.length + 1} 組`);
-            saveTeams();
-        }
-
-        function quickGenerateTeams(count) {
-            playSound('click');
-            teams = [];
-            for (let i = 1; i <= count; i++) {
-                teams.push(`第 ${i} 組`);
+        function holdCurrentPiece() {
+            if (!canHold || gameState !== 'PLAYING') return;
+            if (!holdPiece) {
+                holdPiece = createPiece(SHAPES.find(s => s.symbol === currentPiece.symbol).id);
+                currentPiece = nextPiece;
+                nextPiece = getRandomPiece();
+                drawMiniPiece(nextCtx, nextPiece, nextCanvas);
+            } else {
+                let tempType = SHAPES.find(s => s.symbol === currentPiece.symbol).id;
+                let holdType = SHAPES.find(s => s.symbol === holdPiece.symbol).id;
+                currentPiece = createPiece(holdType);
+                holdPiece = createPiece(tempType);
             }
-            saveTeams();
+            canHold = false;
+            drawMiniPiece(holdCtx, holdPiece, holdCanvas);
+            playSound('rotate');
         }
 
-        function resetDefaultTeams() {
-            if (confirm('確定要恢復預設的 8 組嗎？')) {
-                playSound('click');
-                teams = ['第 1 組', '第 2 組', '第 3 組', '第 4 組', '第 5 組', '第 6 組', '第 7 組', '第 8 組'];
-                saveTeams();
+        // Game Loop
+        function update(time = 0) {
+            if (gameState !== 'PLAYING') return;
+
+            const dt = time - lastTime;
+            lastTime = time;
+            dropCounter += dt;
+
+            if (dropCounter > dropInterval) {
+                dropPiece();
+                dropCounter = 0;
             }
+
+            drawBoard();
+            requestAnimationFrame(update);
         }
 
-        // Run Init on Load
-        initApp();
+        // Keyboard Event Listeners
+        window.addEventListener('keydown', e => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault(); // Prevent page scrolling
+            }
+
+            if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+                togglePause();
+                return;
+            }
+
+            if (gameState !== 'PLAYING') return;
+
+            if (e.key === 'ArrowLeft') {
+                movePiece(-1, 0);
+            } else if (e.key === 'ArrowRight') {
+                movePiece(1, 0);
+            } else if (e.key === 'ArrowDown') {
+                movePiece(0, 1);
+                score += 1;
+                updateStats();
+            } else if (e.key === 'ArrowUp' || e.key === 'x' || e.key === 'X') {
+                rotatePiece();
+            } else if (e.key === ' ') {
+                hardDrop();
+            } else if (e.key === 'c' || e.key === 'C' || e.key === 'Shift') {
+                holdCurrentPiece();
+            }
+        });
+
+        // Initial preview draws
+        drawMiniPiece(nextCtx, null, nextCanvas);
+        drawMiniPiece(holdCtx, null, holdCanvas);
     </script>
 </body>
 </html>
