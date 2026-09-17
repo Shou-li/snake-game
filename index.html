@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>貪吃蛇遊戲 - Snake Game</title>
+    <title>課堂小組抽籤系統 - Classroom Team Drawer</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -11,419 +11,498 @@
             theme: {
                 extend: {
                     colors: {
-                        gameBg: '#0f172a',
+                        appBg: '#0f172a',
                         cardBg: '#1e293b',
-                        accent: '#10b981',
-                        accentHover: '#059669',
+                        accent: '#6366f1',
+                        accentHover: '#4f46e5',
                     }
                 }
             }
         }
     </script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Noto Sans TC', 'Orbitron', sans-serif;
+            font-family: 'Noto Sans TC', sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
         }
-        .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
+        @keyframes pulse-scale {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
-        canvas {
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+        .animate-pulse-scale {
+            animation: pulse-scale 0.5s ease-in-out;
+        }
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-bounce-slow {
+            animation: bounce-slow 2s infinite ease-in-out;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-between p-4 selection:bg-emerald-500 selection:text-white">
+<body class="min-h-screen flex flex-col items-center justify-between p-4 md:p-6 selection:bg-indigo-500 selection:text-white">
 
     <!-- Header -->
-    <header class="w-full max-w-md text-center py-4">
-        <h1 class="text-3xl md:text-4xl font-black font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 drop-shadow">
-            SNAKE GAME
+    <header class="w-full max-w-3xl text-center py-4">
+        <div class="inline-flex items-center justify-center bg-indigo-500/10 border border-indigo-500/30 px-4 py-1.5 rounded-full text-indigo-400 text-xs md:text-sm font-semibold mb-2 shadow-inner">
+            🎓 互動教學小幫手
+        </div>
+        <h1 class="text-3xl md:text-4xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+            課堂小組抽籤系統
         </h1>
-        <p class="text-slate-400 text-sm mt-1">經典貪吃蛇現代版</p>
+        <p class="text-slate-400 text-xs md:text-sm mt-1">輕鬆管理組別、隨機抽籤、決定上臺順序</p>
     </header>
 
-    <!-- Main Game Container -->
-    <main class="w-full max-w-md flex flex-col items-center gap-4">
+    <!-- Main Container -->
+    <main class="w-full max-w-3xl flex flex-col gap-6 my-2">
         
-        <!-- Score Board -->
-        <div class="w-full bg-cardBg/80 backdrop-blur border border-slate-700/50 rounded-2xl p-4 flex justify-between items-center shadow-lg">
-            <div class="flex flex-col items-center flex-1 border-r border-slate-700">
-                <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">當前分數</span>
-                <span id="currentScore" class="text-2xl font-black font-orbitron text-emerald-400 mt-0.5">0</span>
-            </div>
-            <div class="flex flex-col items-center flex-1">
-                <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">最高紀錄</span>
-                <span id="highScore" class="text-2xl font-black font-orbitron text-cyan-400 mt-0.5">0</span>
-            </div>
-        </div>
-
-        <!-- Canvas Wrapper -->
-        <div class="relative bg-cardBg border-2 border-slate-700/80 rounded-2xl overflow-hidden shadow-2xl p-2">
-            <canvas id="gameCanvas" width="360" height="360" class="rounded-xl bg-slate-950 block"></canvas>
-            
-            <!-- Overlay screens -->
-            <div id="startScreen" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-6 transition-opacity duration-300">
-                <div class="w-16 h-16 bg-emerald-500/20 border border-emerald-500/50 rounded-2xl flex items-center justify-center text-emerald-400 text-3xl shadow-lg shadow-emerald-500/10">
-                    🐍
-                </div>
-                <h2 class="text-xl font-bold tracking-wide">準備好挑戰了嗎？</h2>
-                <p class="text-xs text-slate-400 text-center max-w-[240px]">使用方向鍵、WASD 或下方虛擬按鈕控制蛇的方向，吃到食物變長！</p>
-                <button onclick="startGame()" class="mt-2 w-full max-w-[200px] bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-emerald-500/25 transition-all transform active:scale-95 font-orbitron tracking-wider">
-                    開始遊戲
-                </button>
-            </div>
-
-            <div id="pauseScreen" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-6 hidden transition-opacity duration-300">
-                <h2 class="text-2xl font-black font-orbitron text-yellow-400 tracking-wider">遊戲暫停</h2>
-                <button onclick="resumeGame()" class="w-full max-w-[200px] bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all transform active:scale-95 font-orbitron tracking-wider">
-                    繼續遊戲
-                </button>
-            </div>
-
-            <div id="gameOverScreen" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center gap-4 p-6 hidden transition-opacity duration-300">
-                <div class="w-16 h-16 bg-rose-500/20 border border-rose-500/50 rounded-2xl flex items-center justify-center text-rose-400 text-3xl shadow-lg shadow-rose-500/10">
-                    💀
-                </div>
-                <h2 class="text-2xl font-black font-orbitron text-rose-400 tracking-wider">遊戲結束</h2>
-                <div class="text-center">
-                    <p class="text-xs text-slate-400">最終得分</p>
-                    <p id="finalScore" class="text-3xl font-black font-orbitron text-white mt-1">0</p>
-                </div>
-                <button onclick="startGame()" class="mt-2 w-full max-w-[200px] bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-emerald-500/25 transition-all transform active:scale-95 font-orbitron tracking-wider">
-                    再玩一次
-                </button>
-            </div>
-        </div>
-
-        <!-- Controls / Action Buttons -->
-        <div class="w-full flex justify-between items-center gap-3">
-            <button id="pauseBtn" onclick="togglePause()" disabled class="flex-1 bg-cardBg hover:bg-slate-800 border border-slate-700 text-slate-300 py-2.5 px-4 rounded-xl font-medium text-sm transition-all shadow disabled:opacity-40 disabled:cursor-not-allowed">
-                暫停
+        <!-- Navigation Tabs -->
+        <div class="flex bg-cardBg/90 backdrop-blur border border-slate-700/60 p-1.5 rounded-2xl shadow-lg">
+            <button onclick="switchTab('draw')" id="tabBtn-draw" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md">
+                🎯 隨機抽籤
             </button>
-            <button onclick="resetHighScore()" class="bg-cardBg hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-rose-400 py-2.5 px-4 rounded-xl font-medium text-sm transition-all shadow">
-                重置紀錄
+            <button onclick="switchTab('order')" id="tabBtn-order" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white">
+                🔀 順序排定
+            </button>
+            <button onclick="switchTab('teams')" id="tabBtn-teams" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white">
+                📋 組別設定 <span id="teamCountBadge" class="bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-300">8</span>
             </button>
         </div>
 
-        <!-- On-screen D-Pad for Mobile / Touch -->
-        <div class="grid grid-cols-3 gap-2 w-48 mx-auto mt-1 md:hidden">
-            <div></div>
-            <button ontouchstart="handleTouchDir('UP')" onclick="changeDirection('UP')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 active:bg-emerald-600 active:border-emerald-500 text-white h-14 rounded-xl text-xl flex items-center justify-center shadow">⬆️</button>
-            <div></div>
-            <button ontouchstart="handleTouchDir('LEFT')" onclick="changeDirection('LEFT')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 active:bg-emerald-600 active:border-emerald-500 text-white h-14 rounded-xl text-xl flex items-center justify-center shadow">⬅️</button>
-            <button ontouchstart="handleTouchDir('DOWN')" onclick="changeDirection('DOWN')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 active:bg-emerald-600 active:border-emerald-500 text-white h-14 rounded-xl text-xl flex items-center justify-center shadow">⬇️</button>
-            <button ontouchstart="handleTouchDir('RIGHT')" onclick="changeDirection('RIGHT')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 active:bg-emerald-600 active:border-emerald-500 text-white h-14 rounded-xl text-xl flex items-center justify-center shadow">➡️</button>
+        <!-- Tab 1: Random Draw -->
+        <div id="tab-draw" class="space-y-6">
+            <div class="bg-cardBg/90 backdrop-blur border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-xl flex flex-col items-center text-center relative overflow-hidden">
+                
+                <!-- Draw Settings Bar -->
+                <div class="w-full flex flex-wrap justify-between items-center gap-4 pb-6 border-b border-slate-700/60">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs md:text-sm text-slate-400 font-medium">抽取數量：</span>
+                        <select id="drawCountSelect" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm font-bold text-indigo-400 focus:outline-none focus:border-indigo-500">
+                            <option value="1">1 組</option>
+                            <option value="2">2 組</option>
+                            <option value="3">3 組</option>
+                            <option value="4">4 組</option>
+                            <option value="5">5 組</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs md:text-sm text-slate-400 font-medium cursor-pointer flex items-center gap-1.5">
+                            <input type="checkbox" id="removeDrawnCheckbox" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                            已抽中者暫不重複抽取
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Draw Result Display Area -->
+                <div class="py-10 md:py-14 w-full flex flex-col items-center justify-center min-h-[220px]">
+                    <div id="drawPlaceholder" class="text-slate-500 text-sm md:text-base flex flex-col items-center gap-3">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-center text-3xl shadow-inner">
+                            🎲
+                        </div>
+                        點擊下方按鈕開始隨機抽籤
+                    </div>
+                    <div id="drawResultContainer" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-xl">
+                        <!-- Dynamically populated results -->
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="flex flex-wrap justify-center gap-3 w-full max-w-md">
+                    <button onclick="startDraw()" id="drawBtn" class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-500/25 transition-all transform active:scale-95 text-lg tracking-wider flex items-center justify-center gap-2">
+                        <span>✨ 開始抽籤</span>
+                    </button>
+                    <button onclick="resetDrawPool()" id="resetPoolBtn" title="重置未抽中名單" class="hidden bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-4 rounded-2xl font-medium text-sm transition-all shadow">
+                        重置
+                    </button>
+                </div>
+
+                <!-- Remaining pool info -->
+                <p id="poolInfoText" class="text-xs text-slate-500 mt-4">目前參與抽籤組別：共 8 組</p>
+            </div>
+        </div>
+
+        <!-- Tab 2: Presentation Order -->
+        <div id="tab-order" class="hidden space-y-6">
+            <div class="bg-cardBg/90 backdrop-blur border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-xl flex flex-col items-center">
+                <div class="w-full flex justify-between items-center pb-6 border-b border-slate-700/60">
+                    <div>
+                        <h2 class="text-lg font-bold text-white">上臺發表順序排定</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">隨機打亂所有組別順序，決定上臺報告次序</p>
+                    </div>
+                    <button onclick="shuffleOrder()" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-indigo-500/25 transition-all transform active:scale-95 text-sm flex items-center gap-2">
+                        🔀 隨機洗牌
+                    </button>
+                </div>
+
+                <!-- Order List Area -->
+                <div class="w-full py-6">
+                    <div id="orderListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Dynamically populated order items -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Team Management -->
+        <div id="tab-teams" class="hidden space-y-6">
+            <div class="bg-cardBg/90 backdrop-blur border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-xl space-y-6">
+                <div class="flex justify-between items-center pb-4 border-b border-slate-700/60">
+                    <div>
+                        <h2 class="text-lg font-bold text-white">組別清單管理</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">自訂組別名稱或數量（支援直接編輯）</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="resetDefaultTeams()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-2 rounded-xl transition-all">
+                            恢復預設
+                        </button>
+                        <button onclick="addTeam()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow transition-all flex items-center gap-1">
+                            + 新增組別
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Batch Add / Quick Presets -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">快速生成組別</span>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="quickGenerateTeams(4)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition">4 組</button>
+                        <button onclick="quickGenerateTeams(6)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition">6 組</button>
+                        <button onclick="quickGenerateTeams(8)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition">8 組</button>
+                        <button onclick="quickGenerateTeams(10)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition">10 組</button>
+                        <button onclick="quickGenerateTeams(12)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition">12 組</button>
+                    </div>
+                </div>
+
+                <!-- Teams Edit List -->
+                <div id="teamsEditList" class="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
+                    <!-- Dynamically populated team inputs -->
+                </div>
+            </div>
         </div>
 
     </main>
 
     <!-- Footer -->
     <footer class="w-full text-center text-xs text-slate-500 py-4">
-        使用方向鍵或 WASD 鍵控制 • 享受遊戲！
+        課堂小組抽籤系統 • 輕鬆互動無負擔
     </footer>
 
-    <!-- Game Logic Script -->
+    <!-- Audio & App Logic Script -->
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        // Web Audio API Sound Synthesizer (No external mp3 needed)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        const gridsize = 20;
-        const tileCount = canvas.width / gridsize;
-
-        let snake = [];
-        let food = { x: 0, y: 0 };
-        let dx = 0;
-        let dy = 0;
-        let score = 0;
-        let highScore = localStorage.getItem('snakeHighScore') || 0;
-        let gameInterval = null;
-        let gameSpeed = 120; // ms per tick
-        let isPaused = false;
-        let isPlaying = false;
-        let nextDirection = '';
-
-        // Initialize High Score Display
-        document.getElementById('highScore').innerText = highScore;
-
-        // Keyboard Event Listener
-        document.addEventListener('keydown', e => {
-            if (!isPlaying && (e.key === ' ' || e.key === 'Enter')) {
-                startGame();
-                return;
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
             }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
 
-            switch (e.key) {
-                case 'ArrowUp':
-                case 'w':
-                case 'W':
-                    changeDirection('UP');
-                    e.preventDefault();
-                    break;
-                case 'ArrowDown':
-                case 's':
-                case 'S':
-                    changeDirection('DOWN');
-                    e.preventDefault();
-                    break;
-                case 'ArrowLeft':
-                case 'a':
-                case 'A':
-                    changeDirection('LEFT');
-                    e.preventDefault();
-                    break;
-                case 'ArrowRight':
-                case 'd':
-                case 'D':
-                    changeDirection('RIGHT');
-                    e.preventDefault();
-                    break;
-                case 'p':
-                case 'P':
-                    if (isPlaying) togglePause();
-                    break;
-            }
-        });
+            const now = audioCtx.currentTime;
 
-        function changeDirection(direction) {
-            if (!isPlaying || isPaused) return;
-
-            if (direction === 'UP' && dy === 0) {
-                nextDirection = 'UP';
-            } else if (direction === 'DOWN' && dy === 0) {
-                nextDirection = 'DOWN';
-            } else if (direction === 'LEFT' && dx === 0) {
-                nextDirection = 'LEFT';
-            } else if (direction === 'RIGHT' && dx === 0) {
-                nextDirection = 'RIGHT';
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'spin') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200 + Math.random() * 300, now);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'win') {
+                // Ta-da chord sequence
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, index) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(freq, now + index * 0.08);
+                    g.gain.setValueAtTime(0.15, now + index * 0.08);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.3);
+                    o.start(now + index * 0.08);
+                    o.stop(now + index * 0.08 + 0.3);
+                });
             }
         }
 
-        function handleTouchDir(dir) {
-            changeDirection(dir);
+        // State Management
+        let teams = JSON.parse(localStorage.getItem('classroom_teams')) || [
+            '第 1 組', '第 2 組', '第 3 組', '第 4 組',
+            '第 5 組', '第 6 組', '第 7 組', '第 8 組'
+        ];
+        let drawnPool = [...teams];
+        let currentTab = 'draw';
+
+        // Initialize App
+        function initApp() {
+            updateTeamCountBadge();
+            renderTeamsEditList();
+            renderOrderList();
+            updatePoolInfo();
         }
 
-        function startGame() {
-            // Reset state
-            snake = [
-                { x: 8, y: 10 },
-                { x: 7, y: 10 },
-                { x: 6, y: 10 }
-            ];
-            dx = 1;
-            dy = 0;
-            nextDirection = 'RIGHT';
-            score = 0;
-            gameSpeed = 120;
-            isPaused = false;
-            isPlaying = true;
-
-            document.getElementById('currentScore').innerText = score;
-            document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('gameOverScreen').classList.add('hidden');
-            document.getElementById('pauseScreen').classList.add('hidden');
-            document.getElementById('pauseBtn').removeAttribute('disabled');
-            document.getElementById('pauseBtn').innerText = '暫停';
-
-            generateFood();
-
-            if (gameInterval) clearInterval(gameInterval);
-            gameInterval = setInterval(gameLoop, gameSpeed);
+        function saveTeams() {
+            localStorage.setItem('classroom_teams', JSON.stringify(teams));
+            updateTeamCountBadge();
+            renderTeamsEditList();
+            renderOrderList();
+            resetDrawPool();
         }
 
-        function togglePause() {
-            if (!isPlaying) return;
-
-            if (isPaused) {
-                resumeGame();
-            } else {
-                isPaused = true;
-                clearInterval(gameInterval);
-                document.getElementById('pauseScreen').classList.remove('hidden');
-                document.getElementById('pauseBtn').innerText = '繼續';
-            }
+        function updateTeamCountBadge() {
+            document.getElementById('teamCountBadge').innerText = teams.length;
         }
 
-        function resumeGame() {
-            if (!isPlaying || !isPaused) return;
-            isPaused = false;
-            document.getElementById('pauseScreen').classList.add('hidden');
-            document.getElementById('pauseBtn').innerText = '暫停';
-            gameInterval = setInterval(gameLoop, gameSpeed);
-        }
-
-        function gameLoop() {
-            update();
-            if (isPlaying) {
-                draw();
-            }
-        }
-
-        function update() {
-            // Apply buffered direction
-            if (nextDirection) {
-                if (nextDirection === 'UP' && dy === 0) { dx = 0; dy = -1; }
-                if (nextDirection === 'DOWN' && dy === 0) { dx = 0; dy = 1; }
-                if (nextDirection === 'LEFT' && dx === 0) { dx = -1; dy = 0; }
-                if (nextDirection === 'RIGHT' && dx === 0) { dx = 1; dy = 0; }
-                nextDirection = '';
-            }
-
-            // Move head
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-
-            // Check wall collision
-            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-                gameOver();
-                return;
-            }
-
-            // Check self collision
-            for (let i = 0; i < snake.length; i++) {
-                if (head.x === snake[i].x && head.y === snake[i].y) {
-                    gameOver();
-                    return;
-                }
-            }
-
-            snake.unshift(head);
-
-            // Check food collision
-            if (head.x === food.x && head.y === food.y) {
-                score += 10;
-                document.getElementById('currentScore').innerText = score;
-
-                if (score > highScore) {
-                    highScore = score;
-                    localStorage.setItem('snakeHighScore', highScore);
-                    document.getElementById('highScore').innerText = highScore;
-                }
-
-                // Speed up slightly every 50 points
-                if (score % 50 === 0 && gameSpeed > 60) {
-                    gameSpeed -= 8;
-                    clearInterval(gameInterval);
-                    gameInterval = setInterval(gameLoop, gameSpeed);
-                }
-
-                generateFood();
-            } else {
-                snake.pop();
-            }
-        }
-
-        function generateFood() {
-            let valid = false;
-            while (!valid) {
-                food.x = Math.floor(Math.random() * tileCount);
-                food.y = Math.floor(Math.random() * tileCount);
-
-                valid = true;
-                for (let part of snake) {
-                    if (part.x === food.x && part.y === food.y) {
-                        valid = false;
-                        break;
-                    }
-                }
-            }
-        }
-
-        function draw() {
-            // Clear Canvas
-            ctx.fillStyle = '#020617';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw subtle grid lines
-            ctx.strokeStyle = '#0f172a';
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= tileCount; i++) {
-                ctx.beginPath();
-                ctx.moveTo(i * gridsize, 0);
-                ctx.lineTo(i * gridsize, canvas.height);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.moveTo(0, i * gridsize);
-                ctx.lineTo(canvas.width, i * gridsize);
-                ctx.stroke();
-            }
-
-            // Draw Food (Apple with glow effect)
-            ctx.shadowColor = '#f43f5e';
-            ctx.shadowBlur = 12;
-            ctx.fillStyle = '#f43f5e';
-            ctx.beginPath();
-            ctx.arc(
-                food.x * gridsize + gridsize / 2,
-                food.y * gridsize + gridsize / 2,
-                gridsize / 2 - 3,
-                0,
-                Math.PI * 2
-            );
-            ctx.fill();
-            ctx.shadowBlur = 0; // Reset shadow
-
-            // Draw Snake
-            snake.forEach((part, index) => {
-                const isHead = index === 0;
-                ctx.fillStyle = isHead ? '#34d399' : '#10b981';
-                
-                if (isHead) {
-                    ctx.shadowColor = '#10b981';
-                    ctx.shadowBlur = 10;
-                }
-
-                // Rounded rectangles for snake parts
-                const x = part.x * gridsize + 2;
-                const y = part.y * gridsize + 2;
-                const size = gridsize - 4;
-                const radius = 6;
-
-                ctx.beginPath();
-                ctx.roundRect(x, y, size, size, radius);
-                ctx.fill();
-
-                if (isHead) {
-                    ctx.shadowBlur = 0;
-                    // Draw eyes on head
-                    ctx.fillStyle = '#020617';
-                    let eye1X = x + 5, eye1Y = y + 5;
-                    let eye2X = x + 11, eye2Y = y + 5;
-
-                    if (dx === 1) { eye1X = x + 11; eye1Y = y + 5; eye2X = x + 11; eye2Y = y + 11; }
-                    else if (dx === -1) { eye1X = x + 5; eye1Y = y + 5; eye2X = x + 5; eye2Y = y + 11; }
-                    else if (dy === 1) { eye1X = x + 5; eye1Y = y + 11; eye2X = x + 11; eye2Y = y + 11; }
-                    else if (dy === -1) { eye1X = x + 5; eye1Y = y + 5; eye2X = x + 11; eye2Y = y + 5; }
-
-                    ctx.beginPath();
-                    ctx.arc(eye1X, eye1Y, 2, 0, Math.PI * 2);
-                    ctx.arc(eye2X, eye2Y, 2, 0, Math.PI * 2);
-                    ctx.fill();
+        // Tab Switching
+        function switchTab(tab) {
+            playSound('click');
+            currentTab = tab;
+            ['draw', 'order', 'teams'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`tabBtn-${t}`);
+                if (t === tab) {
+                    el.classList.remove('hidden');
+                    btn.className = 'flex-1 py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md';
+                } else {
+                    el.classList.add('hidden');
+                    btn.className = 'flex-1 py-3 px-4 rounded-xl font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white';
                 }
             });
-        }
-
-        function gameOver() {
-            isPlaying = false;
-            clearInterval(gameInterval);
-            document.getElementById('finalScore').innerText = score;
-            document.getElementById('gameOverScreen').classList.remove('hidden');
-            document.getElementById('pauseBtn').setAttribute('disabled', 'true');
-        }
-
-        function resetHighScore() {
-            if (confirm('確定要重置最高分紀錄嗎？')) {
-                localStorage.removeItem('snakeHighScore');
-                highScore = 0;
-                document.getElementById('highScore').innerText = 0;
+            if (tab === 'order') {
+                renderOrderList();
             }
         }
 
-        // Initial draw on load
-        draw();
+        // --- Tab 1: Draw Logic ---
+        function updatePoolInfo() {
+            const removeDrawn = document.getElementById('removeDrawnCheckbox').checked;
+            const total = teams.length;
+            const remaining = drawnPool.length;
+            const info = document.getElementById('poolInfoText');
+            if (removeDrawn) {
+                info.innerText = `目前參與抽籤組別：剩餘 ${remaining} / ${total} 組`;
+            } else {
+                info.innerText = `目前參與抽籤組別：共 ${total} 組（可重複抽取）`;
+            }
+        }
+
+        document.getElementById('removeDrawnCheckbox').addEventListener('change', updatePoolInfo);
+
+        function resetDrawPool() {
+            drawnPool = [...teams];
+            updatePoolInfo();
+            document.getElementById('resetPoolBtn').classList.add('hidden');
+        }
+
+        function startDraw() {
+            if (teams.length === 0) {
+                alert('請先在組別設定中新增組別！');
+                switchTab('teams');
+                return;
+            }
+
+            const count = parseInt(document.getElementById('drawCountSelect').value);
+            const removeDrawn = document.getElementById('removeDrawnCheckbox').checked;
+
+            let pool = removeDrawn ? [...drawnPool] : [...teams];
+            if (pool.length === 0) {
+                alert('所有組別都已經抽完了！請點擊「重置」按鈕重新開始。');
+                return;
+            }
+
+            if (count > pool.length && removeDrawn) {
+                alert(`目前剩餘可抽組別僅剩 ${pool.length} 組！`);
+                return;
+            }
+
+            playSound('click');
+            const drawBtn = document.getElementById('drawBtn');
+            drawBtn.setAttribute('disabled', 'true');
+            drawBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const placeholder = document.getElementById('drawPlaceholder');
+            const container = document.getElementById('drawResultContainer');
+            placeholder.classList.remove('hidden');
+            container.classList.add('hidden');
+            container.innerHTML = '';
+
+            let counter = 0;
+            const maxTicks = 15;
+            const interval = setInterval(() => {
+                playSound('spin');
+                // Temporary random preview
+                const tempRandPool = [...teams].sort(() => 0.5 - Math.random());
+                const previewItems = tempRandPool.slice(0, count);
+                
+                placeholder.innerHTML = `
+                    <div class="text-xl md:text-2xl font-black text-indigo-400 animate-pulse">
+                        🎲 抽籤中... ${previewItems.join('、')}
+                    </div>
+                `;
+                counter++;
+
+                if (counter >= maxTicks) {
+                    clearInterval(interval);
+                    finishDraw(count, removeDrawn);
+                    drawBtn.removeAttribute('disabled');
+                    drawBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }, 80);
+        }
+
+        function finishDraw(count, removeDrawn) {
+            playSound('win');
+            let pool = removeDrawn ? [...drawnPool] : [...teams];
+            
+            // Randomly select `count` items without replacement for this draw
+            let selected = [];
+            for (let i = 0; i < count; i++) {
+                if (pool.length === 0) break;
+                const randomIndex = Math.floor(Math.random() * pool.length);
+                selected.push(pool.splice(randomIndex, 1)[0]);
+            }
+
+            if (removeDrawn) {
+                // Remove selected from drawnPool
+                selected.forEach(item => {
+                    const idx = drawnPool.indexOf(item);
+                    if (idx > -1) drawnPool.splice(idx, 1);
+                });
+                document.getElementById('resetPoolBtn').classList.remove('hidden');
+                updatePoolInfo();
+            }
+
+            const placeholder = document.getElementById('drawPlaceholder');
+            const container = document.getElementById('drawResultContainer');
+            placeholder.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            container.innerHTML = selected.map((team, idx) => `
+                <div class="bg-gradient-to-br from-indigo-900/80 to-purple-900/80 border-2 border-indigo-500/50 rounded-2xl p-5 shadow-xl flex flex-col items-center justify-center transform animate-pulse-scale">
+                    <span class="text-xs text-indigo-300 font-semibold mb-1 uppercase tracking-wider">第 ${idx + 1} 抽中組別</span>
+                    <span class="text-2xl md:text-3xl font-black text-white tracking-wide">${team}</span>
+                </div>
+            `).join('');
+        }
+
+        // --- Tab 2: Presentation Order Logic ---
+        function shuffleOrder() {
+            playSound('click');
+            let shuffled = [...teams].sort(() => Math.random() - 0.5);
+            
+            const container = document.getElementById('orderListContainer');
+            container.innerHTML = '';
+
+            let i = 0;
+            const animInterval = setInterval(() => {
+                playSound('spin');
+                let temp = [...teams].sort(() => Math.random() - 0.5);
+                container.innerHTML = temp.map((team, idx) => `
+                    <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 flex items-center justify-between shadow">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-400 font-bold flex items-center justify-center text-sm">${idx + 1}</span>
+                            <span class="font-bold text-slate-300 text-lg">${team}</span>
+                        </div>
+                        <span class="text-xs text-slate-500 font-mono">洗牌中...</span>
+                    </div>
+                `).join('');
+                i++;
+                if (i > 10) {
+                    clearInterval(animInterval);
+                    playSound('win');
+                    renderFinalOrder(shuffled);
+                }
+            }, 60);
+        }
+
+        function renderOrderList() {
+            renderFinalOrder(teams);
+        }
+
+        function renderFinalOrder(list) {
+            const container = document.getElementById('orderListContainer');
+            container.innerHTML = list.map((team, idx) => `
+                <div class="bg-cardBg border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md hover:border-indigo-500/50 transition-all">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow">${idx + 1}</span>
+                        <span class="font-bold text-white text-lg">${team}</span>
+                    </div>
+                    <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-indigo-400 font-medium">第 ${idx + 1} 順位</span>
+                </div>
+            `).join('');
+        }
+
+        // --- Tab 3: Team Management Logic ---
+        function renderTeamsEditList() {
+            const container = document.getElementById('teamsEditList');
+            container.innerHTML = teams.map((team, idx) => `
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-500 font-mono w-6 text-right">${idx + 1}.</span>
+                    <input type="text" value="${team}" onchange="updateTeamName(${idx}, this.value)" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-medium focus:outline-none focus:border-indigo-500 shadow-inner">
+                    <button onclick="removeTeam(${idx})" class="bg-slate-800 hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-400 border border-slate-700 text-slate-400 p-2.5 rounded-xl transition-all">
+                        🗑️
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateTeamName(index, newName) {
+            if (!newName.trim()) return;
+            teams[index] = newName.trim();
+            saveTeams();
+        }
+
+        function removeTeam(index) {
+            if (teams.length <= 1) {
+                alert('至少需保留一個組別！');
+                return;
+            }
+            playSound('click');
+            teams.splice(index, 1);
+            saveTeams();
+        }
+
+        function addTeam() {
+            playSound('click');
+            teams.push(`第 ${teams.length + 1} 組`);
+            saveTeams();
+        }
+
+        function quickGenerateTeams(count) {
+            playSound('click');
+            teams = [];
+            for (let i = 1; i <= count; i++) {
+                teams.push(`第 ${i} 組`);
+            }
+            saveTeams();
+        }
+
+        function resetDefaultTeams() {
+            if (confirm('確定要恢復預設的 8 組嗎？')) {
+                playSound('click');
+                teams = ['第 1 組', '第 2 組', '第 3 組', '第 4 組', '第 5 組', '第 6 組', '第 7 組', '第 8 組'];
+                saveTeams();
+            }
+        }
+
+        // Run Init on Load
+        initApp();
     </script>
 </body>
 </html>
